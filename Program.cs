@@ -1,76 +1,94 @@
 using System;
-using System.Collections.Generic;
 
 namespace FizzBuzz
 {
     public class Program
     {
         private const char Nl = '\n';
-        private const int numberLimit = 30; // Total amount of numbers to loop over
-        private const int sizeOfNumber = 2; // Max amount of characters the numbers would have -> 30:2 | 1234:4
-        private const int sizeOfText = 8;   // This is always 8 since the biggest text is "FizzBuzz"
+
+        private const int NumberLimit = 30;
+        private const int FizzStep = 3;
+        private const int BuzzStep = 5;
+        private const int MaxTextLength = 8; 
 
         public static void Main()
         {
-            int useForLoop = (sizeOfNumber > sizeOfText) ? sizeOfNumber : sizeOfText;
-            bool f;
-            bool b;
-            int _fizz = 3;
-            int _buzz = 5;
-            CustomArray<char> buffer = new CustomArray<char>(useForLoop*numberLimit);
-            for (ushort i = 1; i <= 30; i++)
+            int maxNumberLength = CountDigits(NumberLimit);
+            int maxLineLength = Math.Max(maxNumberLength, MaxTextLength) + 1; 
+
+            char[] buffer = new char[maxLineLength * NumberLimit];
+
+            int pos = 0;
+            int nextFizz = FizzStep;
+            int nextBuzz = BuzzStep;
+
+            for (int i = 1; i <= NumberLimit; i++)
             {
-                f = i == _fizz;
-                b = i == _buzz;
-                if (f)
+                bool fizz = i == nextFizz;
+                bool buzz = i == nextBuzz;
+
+                if (fizz)
                 {
-                    buffer.Add('F');
-                    buffer.Add('i');
-                    buffer.Add('z');
-                    buffer.Add('z');
-                    _fizz += 3;
+                    buffer[pos++] = 'F';
+                    buffer[pos++] = 'i';
+                    buffer[pos++] = 'z';
+                    buffer[pos++] = 'z';
+
+                    nextFizz += FizzStep;
                 }
 
-                if (b)
+                if (buzz)
                 {
-                    buffer.Add('B');
-                    buffer.Add('u');
-                    buffer.Add('z');
-                    buffer.Add('z');
-                    _buzz += 5;
+                    buffer[pos++] = 'B';
+                    buffer[pos++] = 'u';
+                    buffer[pos++] = 'z';
+                    buffer[pos++] = 'z';
+
+                    nextBuzz += BuzzStep;
                 }
-                else if (!f) buffer.AddRange(i.ToString());
-                buffer.Add(Nl);
+
+                if (!fizz && !buzz)
+                {
+                    pos = WriteNumber(buffer, pos, i);
+                }
+
+                buffer[pos++] = Nl;
             }
-            Console.Out.Write(buffer.ToArray, 0, buffer.Count);
-        }
-    }
 
-    public class CustomArray<T>
-    {
-        private int _index;
-        private readonly T[] _array;
-
-        public int Count => _index + 1;
-        public T[] ToArray => _array;
-        
-        public CustomArray(int size)
-        {
-            _array = new T[size];
+            Console.Out.Write(buffer, 0, pos);
         }
 
-        public void Add(T item)
+        private static int WriteNumber(char[] buffer, int pos, int value)
         {
-            _array[_index] = item;
-            _index++;
-        }
+            int start = pos;
 
-        public void AddRange(IEnumerable<T> items)
-        {
-            foreach (var item in items)
+            do
             {
-                Add(item);
+                buffer[pos++] = (char)('0' + value % 10);
+                value /= 10;
             }
+            while (value > 0);
+
+            for (int left = start, right = pos - 1; left < right; left++, right--)
+            {
+                char temp = buffer[left];
+                buffer[left] = buffer[right];
+                buffer[right] = temp;
+            }
+
+            return pos;
+        }
+
+        private static int CountDigits(int value)
+        {
+            int digits = 1;
+
+            while ((value /= 10) > 0)
+            {
+                digits++;
+            }
+
+            return digits;
         }
     }
 }
